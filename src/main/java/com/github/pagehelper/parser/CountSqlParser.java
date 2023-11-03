@@ -24,6 +24,9 @@
 
 package com.github.pagehelper.parser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.pagehelper.JSqlParser;
 import com.github.pagehelper.page.PageMethod;
 import com.github.pagehelper.util.StringUtil;
@@ -45,6 +48,11 @@ import java.util.*;
  * @author liuzh
  */
 public class CountSqlParser {
+    /**
+    * Logger for this class.
+    */
+    private static final Logger logger = LoggerFactory.getLogger(CountSqlParser.class);
+
     public static final String KEEP_ORDERBY = "/*keep orderby*/";
     private static final Alias TABLE_ALIAS;
 
@@ -191,7 +199,8 @@ public class CountSqlParser {
         }
         try {
             stmt = jSqlParser.parse(sql);
-        } catch (Throwable e) {
+        } catch (final Throwable ex) {
+            logger.warn("ignore jSqlParser err:{}", ex, ex);
             //无法解析的用一般方法返回count语句
             return getSimpleCountSql(sql, countColumn);
         }
