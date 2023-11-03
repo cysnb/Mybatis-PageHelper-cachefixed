@@ -26,8 +26,6 @@ package com.github.pagehelper.dialect.helper;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageProperties;
-import com.github.pagehelper.cache.Cache;
-import com.github.pagehelper.cache.CacheFactory;
 import com.github.pagehelper.dialect.AbstractHelperDialect;
 import com.github.pagehelper.dialect.ReplaceSql;
 import com.github.pagehelper.dialect.replace.RegexWithNolockReplaceSql;
@@ -48,14 +46,12 @@ import java.util.Properties;
  */
 public class SqlServerDialect extends AbstractHelperDialect {
     protected SqlServerParser       pageSql;
-    protected Cache<String, String> CACHE_COUNTSQL;
-    protected Cache<String, String> CACHE_PAGESQL;
     protected ReplaceSql            replaceSql;
 
     @Override
     public String getCountSql(MappedStatement ms, BoundSql boundSql, Object parameterObject, RowBounds rowBounds, CacheKey countKey) {
         String sql = boundSql.getSql();
-        String cacheSql = CACHE_COUNTSQL.get(sql);
+        String cacheSql = CACHE_COUNTSQL == null ? null : CACHE_COUNTSQL.get(sql);
         if (cacheSql != null) {
             return cacheSql;
         } else {
@@ -64,7 +60,9 @@ public class SqlServerDialect extends AbstractHelperDialect {
         cacheSql = replaceSql.replace(cacheSql);
         cacheSql = countSqlParser.getSmartCountSql(cacheSql);
         cacheSql = replaceSql.restore(cacheSql);
-        CACHE_COUNTSQL.put(sql, cacheSql);
+        if (CACHE_COUNTSQL != null) {
+          CACHE_COUNTSQL.put(sql, cacheSql);
+        }
         return cacheSql;
     }
 
@@ -78,13 +76,15 @@ public class SqlServerDialect extends AbstractHelperDialect {
         //处理pageKey
         pageKey.update(page.getStartRow());
         pageKey.update(page.getPageSize());
-        String cacheSql = CACHE_PAGESQL.get(sql);
+        String cacheSql = CACHE_PAGESQL == null ? null : CACHE_PAGESQL.get(sql);
         if (cacheSql == null) {
             cacheSql = sql;
             cacheSql = replaceSql.replace(cacheSql);
             cacheSql = pageSql.convertToPageSql(cacheSql, null, null);
             cacheSql = replaceSql.restore(cacheSql);
-            CACHE_PAGESQL.put(sql, cacheSql);
+            if (CACHE_PAGESQL != null) {
+                CACHE_PAGESQL.put(sql, cacheSql);
+            }
         }
         cacheSql = cacheSql.replace(String.valueOf(Long.MIN_VALUE), String.valueOf(page.getStartRow()));
         cacheSql = cacheSql.replace(String.valueOf(Long.MAX_VALUE), String.valueOf(page.getPageSize()));
@@ -132,14 +132,6 @@ public class SqlServerDialect extends AbstractHelperDialect {
                 throw new RuntimeException("replaceSql 参数配置的值不符合要求，可选值为 simple 和 regex，或者是实现了 "
                         + ReplaceSql.class.getCanonicalName() + " 接口的全限定类名", e);
             }
-        }
-        String sqlCacheClass = properties.getProperty("sqlCacheClass");
-        if (StringUtil.isNotEmpty(sqlCacheClass) && !sqlCacheClass.equalsIgnoreCase("false")) {
-            CACHE_COUNTSQL = CacheFactory.createCache(sqlCacheClass, "count", properties);
-            CACHE_PAGESQL = CacheFactory.createCache(sqlCacheClass, "page", properties);
-        } else {
-            CACHE_COUNTSQL = CacheFactory.createCache(null, "count", properties);
-            CACHE_PAGESQL = CacheFactory.createCache(null, "page", properties);
         }
     }
 }
