@@ -244,13 +244,14 @@ public abstract class AbstractHelperDialect extends AbstractDialect implements C
                 }
             }
             pageKey.update(orderBy);
-            sql = cacheOn ? CACHE_PAGESQL.get(cacheSqlKey) : null;
-            if (sql == null) {
-                sql = OrderByParser.converToOrderBySql(sql, orderBy, jSqlParser);
+            String cachedSql = cacheOn ? CACHE_PAGESQL.get(cacheSqlKey) : null;
+            if (cachedSql == null) {
+                cachedSql = OrderByParser.converToOrderBySql(sql, orderBy, jSqlParser);
                 if (cacheOn && orderByOnly) {
-                    CACHE_PAGESQL.put(cacheSqlKey, sql);
+                    CACHE_PAGESQL.put(cacheSqlKey, cachedSql);
                 }
             }
+            sql = cachedSql;
         }
         if (orderByOnly) {
             return sql;
@@ -265,7 +266,7 @@ public abstract class AbstractHelperDialect extends AbstractDialect implements C
         return pageSql;
     }
 
-    protected String getPageCacheSqlKey(Page page, String sql) {
+    protected String getPageCacheSqlKey(final Page page, final String sql) {
         if (page.getStartRow() == 0) {
             return sql;
         }
