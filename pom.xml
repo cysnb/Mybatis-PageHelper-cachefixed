@@ -59,6 +59,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <argLine>-Dfile.encoding=UTF-8</argLine>
+        <private.mvn.addr>https://whdev1.work:10040</private.mvn.addr>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -316,4 +320,38 @@
             </distributionManagement>
         </profile>
     </profiles>
+
+        <distributionManagement>
+        <repository>
+            <id>egoonetwh-releases</id>
+            <name>egoonet1-releases</name>
+            <url>${private.mvn.addr}/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>egoonetwh-snapshots</id>
+            <name>egoonet1-snapshots</name>
+            <url>${private.mvn.addr}/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <!-- repositories and pluginRepositories here-->
+    <repositories>
+        <repository>
+            <id>maven-myegoodev</id>
+            <name>maven-myegoodev</name>
+            <url>${private.mvn.addr}/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+
 </project>
